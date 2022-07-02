@@ -4,8 +4,6 @@ Official code implementation for CDS.
 
 Requires Pytorch 1.9.0 and CUDA 11.0
 
-**TODO**: pre-trained model weight for CDS-Large
-
 ### Instructions:
 
 To train the CDS-E model on various encodings of CIFAR10/100/SVHN datasets, please run
@@ -23,6 +21,8 @@ To train the CDS-MSTAR model on MSTAR dataset, please run
 To train the CDS-Large model, please run
 
 `python train_big.py`
+
+CDS-Large pre-trained model [weights](https://drive.google.com/file/d/16Eka8UKDQdqzutdKxiYw1ss1gGtejwk9/view?usp=sharing)
 
 
 
