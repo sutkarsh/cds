@@ -321,7 +321,7 @@ def CDS_large(outsize=10, *args, **kwargs):
     n = [
         layers.ComplexConvFast(2, channels['prep'], kern_size=3, padding=1, groups=1),
 
-        layers.ConjugateLayer(channels['prep'], kern_size=1),
+        layers.ConjugateLayer(channels['prep'], kern_size=1, use_one_filter=True),
 
         conv_bn_complex(channels['prep'], channels['prep'], groups=2),
         conv_bn_complex(channels['prep'], channels['layer1'], groups=2),
