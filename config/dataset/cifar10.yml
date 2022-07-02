@@ -1,0 +1,3 @@
+dataset:
+  args:
+    data_path: CIFAR/

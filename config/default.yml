@@ -1,0 +1,32 @@
+dataset:
+  function: generate_CIFAR_dataloader # Dataset: Which dataset settings to use
+  args:
+    data_path: CIFAR/
+    split_percent: 100
+    normalize_mag: true
+    lab: false
+    dset_type: cifar10
+    remove_train: 0
+    sliding: false
+
+model:
+  name: HyperReal # model name: Which model to load from models.py
+  args:
+    dset_type: lab
+    outsize: 10
+    convex_constraint: false
+    nonlin: crelu
+    use_mag: false # Whether to use magnitude modulation in wfm
+    groups: 1
+    g_global: false
+    g_disable: false
+    no_clutter: false
+    asymm: false
+    mag_offset: 0.000000001
+    bias: true
+    prototype_size: 128
+    new_init: false
+    trelu_b: 1.0
+    no_bias: false
+    aproj: 1.0
+    phase_scale: 1.0

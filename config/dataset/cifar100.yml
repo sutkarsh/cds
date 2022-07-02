@@ -1,0 +1,8 @@
+dataset:
+  args:
+    dset_type: cifar100
+
+model:
+  args: 
+      outsize: 100
+  

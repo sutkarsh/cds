@@ -1,0 +1,9 @@
+dataset:
+  function: generate_CIFAR_dataloader # Dataset: Which dataset settings to use
+  args:
+    lab: False
+    sliding: true
+
+model:
+  args:
+    dset_type: lab

@@ -621,7 +621,7 @@ class GTReLU(nn.Module):
 class DCN_CBN(th.nn.Module):
     """
     DCN's CBN
-    Mostly copied/inspired from Pyth th/nn/modules/batchnorm.py
+    Mostly based on Pytorch th/nn/modules/batchnorm.py and DCN's Complex BatchNorm implementation
     """
 
     def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True,

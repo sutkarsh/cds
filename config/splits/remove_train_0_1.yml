@@ -1,0 +1,3 @@
+dataset:
+  args:
+    remove_train: 0.1

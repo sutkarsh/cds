@@ -1,0 +1,8 @@
+dataset:
+  function: generate_CIFAR_dataloader                     # Dataset: Which dataset settings to use
+  args:
+    lab: false
+model:
+  args: 
+    dset_type: rgb
+ 

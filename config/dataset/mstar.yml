@@ -1,0 +1,10 @@
+dataset:
+  function: generate_MSTAR_dataloader # Dataset: Which dataset settings to use
+  args:
+    data_path: /home/utkarsh/data/MSTAR/
+    normalize_mag: true
+
+model:
+  name: HyperReal_MSTAR # model name: Which model to load from models.py
+  args:
+    dset_type: "mstar"

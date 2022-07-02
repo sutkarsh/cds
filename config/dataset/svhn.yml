@@ -1,0 +1,3 @@
+dataset:
+  args:
+    dset_type: svhn

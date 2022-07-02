@@ -277,143 +277,21 @@ class CDS_MSTAR(nn.Module):
         return self.cnn(x)
 
 
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1, num_groups=1):
-        super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(
-            in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False, groups=num_groups)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3,
-                               stride=1, padding=1, bias=False, groups=num_groups)
-        self.bn2 = nn.BatchNorm2d(planes)
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes,
-                          kernel_size=1, stride=stride, bias=False, groups=num_groups),
-                nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        out += self.shortcut(x)
-        out = F.relu(out)
-        return out
-
-
-class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_groups=[1, 1, 1, 1], dset_type='rgb', outsize=10, *args, **kwargs):
-        super(ResNet, self).__init__()
-        self.in_planes = 64
-        self.dset_type = dset_type
-
-        if dset_type == 'sliding':
-            self.conv1 = nn.Conv2d(4, 64, kernel_size=3,
-                                   stride=1, padding=1, bias=False)
-        elif dset_type == 'lab':
-            self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
-                                   stride=1, padding=1, bias=False)
-        elif dset_type == 'rgb':
-            self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
-                                   stride=1, padding=1, bias=False)
-        elif dset_type == 'mstar':
-            self.conv1 = nn.Conv2d(2, 64, kernel_size=3,
-                                   stride=1, padding=1, bias=False)
-        else:
-            self.conv1 = nn.Conv2d(6, 64, kernel_size=3,
-                                   stride=1, padding=1, bias=False)
-
-        self.bn1 = nn.BatchNorm2d(64)
-        self.layer1 = self._make_layer(
-            block,  64, num_blocks[0], stride=1, num_groups=num_groups[0])
-        self.layer2 = self._make_layer(
-            block, 128, num_blocks[1], stride=2, num_groups=num_groups[1])
-        self.layer3 = self._make_layer(
-            block, 256, num_blocks[2], stride=2, num_groups=num_groups[2])
-        self.layer4 = self._make_layer(
-            block, 512, num_blocks[3], stride=2, num_groups=num_groups[3])
-        self.linear = nn.Linear(512*block.expansion, outsize)
-
-    def _make_layer(self, block, planes, num_blocks, stride, num_groups):
-        strides = [stride] + [1]*(num_blocks-1)
-        layers = []
-        for stride in strides:
-            layers.append(block(self.in_planes, planes,
-                          stride, num_groups=num_groups))
-            self.in_planes = planes * block.expansion
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        x = torch.stack([x.real, x.imag], dim=1)
-        if self.dset_type == 'sliding':
-            x = torch.stack(
-                [x[:, 0, 0], x[:, 0, 1], x[:, 1, 0], x[:, 1, 1]], dim=1)
-        elif self.dset_type == 'lab':
-            x = torch.stack([x[:, 0, 0], x[:, 0, 1], x[:, 1, 1]], dim=1)
-        elif self.dset_type == 'rgb':
-            x = x[:, 0]
-        else:
-            x = x.reshape(x.shape[0], x.shape[1] *
-                          x.shape[2], x.shape[3], x.shape[4])
-
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
-        out = self.layer4(out)
-        out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
-        out = self.linear(out)
-        return out
-
-
-def ResNet18(dset_type='lab', outsize=10, *args, **kwargs):
-    # return ResNet(BasicBlock, [2, 2, 2, 2], dset_type='lab', outsize=10, *args, **kwargs)
-    return ResNet(BasicBlock, [2, 2, 2, 1], num_groups=[1, 1, 2, 4], dset_type='lab', outsize=10, *args, **kwargs)
-
-
-class Add2ndChan(nn.Module):
-    def forward(self, x):
-        out = torch.stack([x.real, x.imag], dim=1)
-        return out
-
-
-def conv_bn_complex(c_in, c_out, groups=1, bn_type='b1', nonlin_type='t1'):
-    if nonlin_type == 't1':
-        nonlin = nn.ReLU(True)
-    elif nonlin_type == 't2':
-        nonlin = nn.Sequential(layers.scaling_layer(
-            c_out), layers.PhaseTangentRELU_2Chan())
-    elif nonlin_type == 't3':
-        nonlin = layers.eqnl(c_out)
-    else:
-        nonlin = layers.ptreluVN13(c_out)
-
-    if bn_type == 'b1':
-        bn = layers.NaiveCBN(c_out)
-    else:
-        bn = layers.VNCBN(c_out)
-
+def conv_bn_complex(c_in, c_out, groups=1):
     return nn.Sequential(
-        layers.ComplexConv(c_in, c_out, kern_size=3,
-                           padding=1, groups=groups, bias=False, new_init=True, use_groups_init=True),
-        bn,
-        nonlin,
+        layers.ComplexConvFast(c_in, c_out, kern_size=3,
+                               padding=1, groups=groups),
+        layers.ComplexBN(c_out),
+        nn.ReLU(True),
     )
 
 
 class residual_complex(nn.Module):
-    def __init__(self, c, groups=1, bn_type='b1', nonlin_type='t1'):
+    def __init__(self, c, groups=1):
         super(residual_complex, self).__init__()
         self.res = nn.Sequential(
-            conv_bn_complex(c, c, groups=groups, bn_type=bn_type,
-                            nonlin_type=nonlin_type),
-            conv_bn_complex(c, c, groups=groups,
-                            bn_type=bn_type, nonlin_type=nonlin_type)
+            conv_bn_complex(c, c, groups=groups),
+            conv_bn_complex(c, c, groups=groups)
         )
 
     def forward(self, x):
@@ -437,76 +315,26 @@ class mul(nn.Module):
         return x * self.c
 
 
-class slicer(nn.Module):
-    def __init__(self):
-        super(slicer, self).__init__()
-
-    def forward(self, x):
-        return x[..., 0, 0]
-
-
-def CDS_large(dset_type='lab', outsize=10, *args, **kwargs):
-    cifarnet_config = 'wb1t1'
+def CDS_large(outsize=10, *args, **kwargs):
     channels = {'prep': 64,
                 'layer1': 128, 'layer2': 256, 'layer3': 256}
-    # channels = {'prep': 16,
-    #             'layer1': 32, 'layer2': 64, 'layer3': 64}
-    inp_size = 2 if ((dset_type == 'lab') or (dset_type == 'sliding')) else 3
+    n = [
+        layers.ComplexConvFast(2, channels['prep'], kern_size=3, padding=1, groups=1),
 
-    bn_type = 'b1' if 'b1' in cifarnet_config else 'b2'
+        layers.ConjugateLayer(channels['prep'], kern_size=1),
 
-    if 't1' in cifarnet_config:
-        nonlin_type = 't1'
-    elif 't2' in cifarnet_config:
-        nonlin_type = 't2'
-    elif 't3' in cifarnet_config:
-        nonlin_type = 't3'
-    else:
-        nonlin_type = 't4'
-
-    n = [Add2ndChan()]
-
-    if 'd' in cifarnet_config:
-        n += [
-            # conv_bn_complex(
-            # inp_size, channels['prep'], groups=1, bn_type='b2', nonlin_type='t4'),
-            # residual_complex(channels['prep'], groups=4,
-            #                  bn_type='b2', nonlin_type='t4'),
-            layers.ComplexConv(inp_size, channels['prep'], kern_size=3, padding=1,
-                               groups=1, bias=False, new_init=True, use_groups_init=True),
-            layers.ptreluVN13(channels['prep']),
-            layers.ComplexConv(channels['prep'], channels['prep'], kern_size=3, padding=1,
-                               groups=4, bias=False, new_init=True, use_groups_init=True),
-            layers.ConjugateLayer(channels['prep'], 1, new_init=True),
-            conv_bn_complex(
-                channels['prep'], channels['prep'], groups=1, bn_type=bn_type, nonlin_type=nonlin_type)]
-    else:
-        n += [conv_bn_complex(
-            inp_size, channels['prep'], groups=1, bn_type=bn_type, nonlin_type=nonlin_type)]
-
-    n += [
-        conv_bn_complex(
-            channels['prep'], channels['layer1'], groups=2, bn_type=bn_type, nonlin_type=nonlin_type),
+        conv_bn_complex(channels['prep'], channels['prep'], groups=2),
+        conv_bn_complex(channels['prep'], channels['layer1'], groups=2),
         layers.MaxPoolMag(2),
-        residual_complex(channels['layer1'], groups=2,
-                         bn_type=bn_type, nonlin_type=nonlin_type),
-        conv_bn_complex(channels['layer1'],
-                        channels['layer2'], groups=4, bn_type=bn_type, nonlin_type=nonlin_type),
+        residual_complex(channels['layer1'], groups=2),
+        conv_bn_complex(channels['layer1'], channels['layer2'], groups=4),
         layers.MaxPoolMag(2),
-        conv_bn_complex(channels['layer2'],
-                        channels['layer3'], groups=2, bn_type=bn_type, nonlin_type=nonlin_type),
+        conv_bn_complex(channels['layer2'], channels['layer3'], groups=2),
         layers.MaxPoolMag(2),
-        residual_complex(channels['layer3'], groups=4,
-                         bn_type=bn_type, nonlin_type=nonlin_type),
+        residual_complex(channels['layer3'], groups=4),
         layers.MaxPoolMag(4),
-        # layers.ComplexConv(channels['layer3'], channels['layer3'],
-        #                        kern_size=4, groups=channels['layer3']),
         flatten(),
-        nn.Linear(channels['layer3']*2, 10, bias=False),
+        nn.Linear(channels['layer3']*2, outsize, bias=False),
         mul(0.125),
-
-        # layers.VNCBN(channels['layer3']),
-        # slicer(),
-        # layers.DistFeatures(channels['layer3']),
     ]
     return nn.Sequential(*n)
