@@ -4,7 +4,7 @@ Official code implementation for CDS.
 
 Requires Pytorch 1.9.0 and CUDA 11.0
 
-**TODO**: `requirements.txt` and pre-trained model weight for CDS-Large
+**TODO**: pre-trained model weight for CDS-Large
 
 ### Instructions:
 
