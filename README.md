@@ -23,11 +23,13 @@ To train the CDS-Large model, please run
 
 Please cite our work as:
 
-`@InProceedings{Singhal_2022_CVPR,
+```
+@InProceedings{Singhal_2022_CVPR,
     author    = {Singhal, Utkarsh and Xing, Yifei and Yu, Stella X.},
     title     = {Co-Domain Symmetry for Complex-Valued Deep Learning},
     booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
     month     = {June},
     year      = {2022},
     pages     = {681-690}
-}`
+}
+```
