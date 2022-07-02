@@ -2,6 +2,11 @@
 
 Official code implementation for CDS. 
 
+Requires Pytorch 1.9.0 and CUDA 11.0
+
+**TODO**: `requirements.txt` and pre-trained model weight for CDS-Large
+
+### Instructions:
 
 To train the CDS-E model on various encodings of CIFAR10/100/SVHN datasets, please run
 
