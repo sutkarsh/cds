@@ -613,7 +613,7 @@ class GTReLU(nn.Module):
                 th.minimum(th.maximum(self.phase_scale[None, :, None, None],
                                       th.tensor(0.5)), th.tensor(2.0))
 
-            x = th.stack([norm*th.cos(angle), norm*th.cos(angle)], dim=1)
+            x = th.stack([norm*th.cos(angle), norm*th.sin(angle)], dim=1)
 
         return x
 
