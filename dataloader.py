@@ -80,9 +80,9 @@ def generate_MSTAR_dataloader(split_percent=10, data_path='../MSTAR/', train_bat
     x_val = x_val[:, None, ...]  # BHW -> BCHW
 
     if mag_only:
-        x_train = np.abs(x_train)
-        x_test = np.abs(x_test)
-        x_val = np.abs(x_val)
+        x_train = np.linalg.norm(x_train, axis=1)
+        x_test = np.linalg.norm(x_test, axis=1)
+        x_val = np.linalg.norm(x_val, axis=1)
 
     data_train = torch.utils.data.TensorDataset(torch.from_numpy(x_train).type(
         torch.complex64), torch.from_numpy(y_[train_idx]).type(torch.LongTensor))
