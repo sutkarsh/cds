@@ -85,6 +85,8 @@ class small_cnn(nn.Module):
     def forward(self, x):
         if len(x.shape) == 5:
             x = x.reshape(x.shape[0], -1, x.shape[-2], x.shape[-1])
+        else:
+            x = x.abs()
         x = self.conv_1(x)
         x = self.bn_1(x)
         x_res = self.relu(x)
