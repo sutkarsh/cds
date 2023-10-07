@@ -29,7 +29,7 @@ def convert_real_imag(inputs):
     return np.stack([real, imag], axis=1)
 
 
-def generate_MSTAR_dataloader(split_percent=10, data_path='../MSTAR/', train_batch=256, test_batch=256, val_batch=256, seed=0, normalize_mag=True, random_seed=False, *args, **kwargs):
+def generate_MSTAR_dataloader(split_percent=10, data_path='../MSTAR/', train_batch=256, test_batch=256, val_batch=256, seed=0, normalize_mag=True, random_seed=False, mag_only=False, *args, **kwargs):
 
     # Generates MSTAR dataloader
     # where percent_train is just random split with **percent_train** % for training and rest for test.
@@ -78,6 +78,11 @@ def generate_MSTAR_dataloader(split_percent=10, data_path='../MSTAR/', train_bat
     x_train = x_train[:, None, ...]  # BHW -> BCHW
     x_test = x_test[:, None, ...]  # BHW -> BCHW
     x_val = x_val[:, None, ...]  # BHW -> BCHW
+
+    if mag_only:
+        x_train = np.abs(x_train)
+        x_test = np.abs(x_test)
+        x_val = np.abs(x_val)
 
     data_train = torch.utils.data.TensorDataset(torch.from_numpy(x_train).type(
         torch.complex64), torch.from_numpy(y_[train_idx]).type(torch.LongTensor))
