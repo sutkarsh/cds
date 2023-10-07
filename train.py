@@ -107,10 +107,10 @@ def main(args):
 
     if 'args' in cfg['dataset']:
         train_loader, val_loader, test_loader = getattr(dataloader, cfg['dataset']['function'])(
-            **cfg['dataset']['args'], seed=args.seed, train_batch=args.bs, val_batch=args.bs, test_batch=args.bs)
+            **cfg['dataset']['args'], seed=args.seed, train_batch=args.bs, val_batch=args.bs, test_batch=args.bs, mag_only=args.mag_only)
     else:
         train_loader, val_loader, test_loader = getattr(dataloader, cfg['dataset']['function'])(
-            seed=args.seed, train_batch=args.bs, val_batch=args.bs, test_batch=args.bs)
+            seed=args.seed, train_batch=args.bs, val_batch=args.bs, test_batch=args.bs, mag_only=args.mag_only)
 
     # Tracking best validation model
     tracker = Model_Tracker(ckpt_dir, LOG)
@@ -190,6 +190,9 @@ if __name__ == "__main__":
 
     parser.add_argument("--log_every", type=int, default=50,
                         help="Log losses every N iterations")
+
+    parser.add_argument("--mag_only", default=False, action="store_true"
+                        help="Only use magnitude. Works for MSTAR only")
 
     parser.add_argument("--cifarnet_config", default=None,
                         help="Which type of cifarnet config to use")
