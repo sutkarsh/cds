@@ -1,2 +1,4 @@
 model:
   name: small_cnn
+  args:
+    in_size: 1

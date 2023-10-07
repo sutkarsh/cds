@@ -30,3 +30,4 @@ model:
     no_bias: false
     aproj: 1.0
     phase_scale: 1.0
+    in_size: null
