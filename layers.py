@@ -514,7 +514,7 @@ class Two_Channel_Nonlinearity(th.autograd.Function):
         inputs, phase_mask = ctx.saved_tensors
         grad_input = grad_output.clone()
 
-        grad_input = grad_input*(1-phase_mask)
+        grad_input = grad_input*(phase_mask)
 
         return grad_input
 
